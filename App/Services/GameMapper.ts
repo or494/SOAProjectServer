@@ -1,7 +1,7 @@
 import Logic from "../Logic/logic";
 
 class GameMapper<T>{
-    private gameUserMapper = new Map<T, string[]>();  // index 0 = false, index 1 = true
+    private gameUserMapper = new Map<T, string[]>();  // index 0 = true, index 1 = false
     private userGameMapper = new Map<string, T>();
 
     Add = (game: T, user1Id: string, user2Id: string) => {
@@ -25,6 +25,14 @@ class GameMapper<T>{
     GetGameByUser = (userId: string) => {
         const game = this.userGameMapper.get(userId);
         return game;
+    }
+
+    GetUserColor = (userId: string) => {
+        const game = this.userGameMapper.get(userId) as T;
+        const usersArray = this.gameUserMapper.get(game) as string[];
+        if(usersArray[0] == userId) return true;
+        else if(usersArray[1] == userId) return false;
+        else return undefined;
     }
 
     GetRivalByUser = (userId: string) => {

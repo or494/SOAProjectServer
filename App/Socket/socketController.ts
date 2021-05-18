@@ -85,7 +85,28 @@ const AcceptGameInvitationListener = (socket: any) => {
 }
 
 const ThrowOneDice = (socket: any) => {
-    
+    socket.on('throwOneDice', () => {
+        const game = GameMapperService.GetGameByUser(socket.request.user._id);
+        if(game){
+            const userColor = GameMapperService.GetUserColor(socket.request.user._id) as boolean;
+            const diceResult = game.HandleThrowOneDice(userColor);
+            socket.emit('oneDiceSucceed', diceResult);
+            const secondUserId = GameMapperService.GetRivalByUser(socket.request.user._id);
+            const socketId = SocketUserMapperService.GetSocketIdByUserId(secondUserId) as string;
+            const rivalSocket = GetSocketById(socketId)
+            rivalSocket.emit('oneDiceRivalSucceed', diceResult);
+            if(game.preGame.whoStarts == 0){
+                socket.emit('throwOneDiceAgain');
+                rivalSocket.emit('throwOneDiceAgain');
+            } else if(game.preGame.whoStarts == 1){
+                socket.emit('start', true);
+                rivalSocket.emit('start', true);
+            } else if(game.preGame.whoStarts == 2){
+                socket.emit('start', false);
+                rivalSocket.emit('start', false);
+            }
+        }
+    })
 }
 
 // checks if user is exist and connected

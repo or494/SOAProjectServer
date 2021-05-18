@@ -7,6 +7,7 @@ var Player_1 = __importDefault(require("./Models/Player"));
 var Consts_1 = require("./Models/Consts");
 var DS_1 = __importDefault(require("./Models/DS"));
 var Turn_1 = __importDefault(require("./Models/Turn"));
+var PreGame_1 = __importDefault(require("./Models/PreGame"));
 var Logic = /** @class */ (function () {
     function Logic() {
         this.isGameOver = false;
@@ -16,8 +17,19 @@ var Logic = /** @class */ (function () {
     //endpoints:
     // Endpoint
     // to decide who starts
-    Logic.prototype.HandleThrowOneDice = function () {
-        return Math.floor(Math.random() * 6 + 1);
+    Logic.prototype.HandleThrowOneDice = function (color) {
+        if (this.preGame == undefined) {
+            this.preGame = new PreGame_1.default(color, Math.floor(Math.random() * 6 + 1));
+            return this.preGame.cube;
+        }
+        else {
+            var number = Math.floor(Math.random() * 6 + 1);
+            if (this.preGame.player)
+                this.preGame.whoStarts = this.HandleWhoStarts(this.preGame.cube, number);
+            else
+                this.preGame.whoStarts = this.HandleWhoStarts(number, this.preGame.cube);
+            return number;
+        }
     };
     // Endpoint
     //returns 1/2/0 for who starts, 0 for no-decision

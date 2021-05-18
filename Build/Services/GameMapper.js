@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var GameMapper = /** @class */ (function () {
     function GameMapper() {
         var _this = this;
-        this.gameUserMapper = new Map(); // index 0 = false, index 1 = true
+        this.gameUserMapper = new Map(); // index 0 = true, index 1 = false
         this.userGameMapper = new Map();
         this.Add = function (game, user1Id, user2Id) {
             if (_this.userGameMapper.get(user1Id) !== undefined || _this.userGameMapper.get(user2Id) !== undefined)
@@ -25,6 +25,16 @@ var GameMapper = /** @class */ (function () {
         this.GetGameByUser = function (userId) {
             var game = _this.userGameMapper.get(userId);
             return game;
+        };
+        this.GetUserColor = function (userId) {
+            var game = _this.userGameMapper.get(userId);
+            var usersArray = _this.gameUserMapper.get(game);
+            if (usersArray[0] == userId)
+                return true;
+            else if (usersArray[1] == userId)
+                return false;
+            else
+                return undefined;
         };
         this.GetRivalByUser = function (userId) {
             var game = _this.userGameMapper.get(userId);

@@ -4,8 +4,10 @@ import Player from './Models/Player'
 import { START_BLACK_END_WHITE_INDEX, START_WHITE_END_BLACK_INDEX, MAX_COINS_OUT } from './Models/Consts'
 import DS from './Models/DS'
 import Turn from './Models/Turn'
+import PreGame from './Models/PreGame';
 
 class Logic {
+  preGame!: PreGame
   ds!: DS
   isGameOver: boolean = false
   players!: Array<Player>
@@ -19,8 +21,19 @@ class Logic {
   //endpoints:
   // Endpoint
   // to decide who starts
-  HandleThrowOneDice(): number {
-    return Math.floor(Math.random() * 6 + 1)
+  HandleThrowOneDice(color: boolean): number {
+    if(this.preGame == undefined){
+      this.preGame = new PreGame(color, Math.floor(Math.random() * 6 + 1));
+      return this.preGame.cube;
+    } else{
+      const number = Math.floor(Math.random() * 6 + 1);
+      if(this.preGame.player)
+        this.preGame.whoStarts = this.HandleWhoStarts(this.preGame.cube, number);
+      else
+      this.preGame.whoStarts = this.HandleWhoStarts( number,this.preGame.cube);
+
+      return number;
+    }
   }
 
   // Endpoint

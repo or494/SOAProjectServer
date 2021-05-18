@@ -149,6 +149,30 @@ var AcceptGameInvitationListener = function (socket) {
     }); });
 };
 var ThrowOneDice = function (socket) {
+    socket.on('throwOneDice', function () {
+        var game = GameMapper_1.default.GetGameByUser(socket.request.user._id);
+        if (game) {
+            var userColor = GameMapper_1.default.GetUserColor(socket.request.user._id);
+            var diceResult = game.HandleThrowOneDice(userColor);
+            socket.emit('oneDiceSucceed', diceResult);
+            var secondUserId = GameMapper_1.default.GetRivalByUser(socket.request.user._id);
+            var socketId = SocketUserMapper_1.default.GetSocketIdByUserId(secondUserId);
+            var rivalSocket = GetSocketById(socketId);
+            rivalSocket.emit('oneDiceRivalSucceed', diceResult);
+            if (game.preGame.whoStarts == 0) {
+                socket.emit('throwOneDiceAgain');
+                rivalSocket.emit('throwOneDiceAgain');
+            }
+            else if (game.preGame.whoStarts == 1) {
+                socket.emit('start', true);
+                rivalSocket.emit('start', true);
+            }
+            else if (game.preGame.whoStarts == 2) {
+                socket.emit('start', false);
+                rivalSocket.emit('start', false);
+            }
+        }
+    });
 };
 // checks if user is exist and connected
 var CheckIfUserExistAndConnected = function (id) { return __awaiter(void 0, void 0, void 0, function () {
