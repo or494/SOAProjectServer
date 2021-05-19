@@ -34,7 +34,7 @@ class Logic {
       if(this.preGame.player)
         this.preGame.whoStarts = this.HandleWhoStarts(this.preGame.cube, number);
       else
-      this.preGame.whoStarts = this.HandleWhoStarts( number,this.preGame.cube);
+        this.preGame.whoStarts = this.HandleWhoStarts( number,this.preGame.cube);
 
       return number;
     }

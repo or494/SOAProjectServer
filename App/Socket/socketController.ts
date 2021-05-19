@@ -27,9 +27,9 @@ const RequestRandomGame = (socket: any) => {
         } else if(RandomGameQueue != socket.request.user._id){
             const userInQueue = RandomGameQueue;
             GameMapperService.Add(new Logic(), socket.request.user._id, userInQueue);
-            socket.emit('joinGame', {color: false, game: GameMapperService.GetGameByUser(userInQueue)}); 
+            socket.emit('joinGame', {color: true, game: GameMapperService.GetGameByUser(userInQueue)}); 
             GetSocketById(SocketUserMapperService.GetSocketIdByUserId(userInQueue) as string)
-                .emit('joinGame', {color: true, game: GameMapperService.GetGameByUser(userInQueue)}); 
+                .emit('joinGame', {color: false, game: GameMapperService.GetGameByUser(userInQueue)}); 
             console.log('starting game');
             RandomGameQueue = undefined;
         }
@@ -99,17 +99,22 @@ const ThrowOneDice = (socket: any) => {
             const socketId = SocketUserMapperService.GetSocketIdByUserId(secondUserId) as string;
             const rivalSocket = GetSocketById(socketId)
             rivalSocket.emit('oneDiceRivalSucceed', diceResult);
+            console.log(userColor);
             setTimeout(() => {
                 if(game.preGame?.whoStarts == 0){
                     socket.emit('throwOneDiceAgain');
                     rivalSocket.emit('throwOneDiceAgain');
                     game.ReinitializePreGame();
                 } else if(game.preGame?.whoStarts == 1){
-                    socket.emit('start', false);
-                    rivalSocket.emit('start', false);
-                } else if(game.preGame?.whoStarts == 2){
                     socket.emit('start', true);
                     rivalSocket.emit('start', true);
+                    console.log('true starts')
+
+                } else if(game.preGame?.whoStarts == 2){
+                    socket.emit('start', false);
+                    rivalSocket.emit('start', false);
+                    console.log('false starts')
+
                 }
             }, 1500); 
         }
@@ -121,6 +126,7 @@ const ThrowDices = (socket: any) => {
         const game = GameMapperService.GetGameByUser(socket.request.user._id);
         if(game){
             const userColor = GameMapperService.GetUserColor(socket.request.user._id) as boolean;
+            console.log(userColor);
             if(game.currentTurn.whosTurn == userColor){
                 const dices = game.HandleThrowTwoDices();
                 const rivalId = GameMapperService.GetRivalByUser(socket.request.user._id);
@@ -157,7 +163,7 @@ const Move = (socket: any) => {
                         socket.emit('winner', (result.isWon as Player).coinColor);
                         rivalSocket.emit('winner', (result.isWon as Player).coinColor);
                     }
-                    if(!game.HandleCheckAbilityToPlayByDices() || result.isTurnOver) {
+                    if(result.isTurnOver || !game.HandleCheckAbilityToPlayByDices()) {
                         socket.emit('start', game.currentTurn.whosTurn);
                         rivalSocket.emit('start', game.currentTurn.whosTurn);
                     }
