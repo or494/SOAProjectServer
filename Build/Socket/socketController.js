@@ -203,12 +203,28 @@ var ThrowDices = function (socket) {
     });
 };
 var Move = function (socket) {
-    socket.on('Move', function (movement) {
+    socket.on('move', function (movement) {
         var game = GameMapper_1.default.GetGameByUser(socket.request.user._id);
         if (game) {
             var userColor = GameMapper_1.default.GetUserColor(socket.request.user._id);
             if (game.currentTurn.whosTurn == userColor) {
                 var result = game.HandleMove(movement.src, movement.dst);
+                if (result) {
+                    var rivalId = GameMapper_1.default.GetRivalByUser(socket.request.user._id);
+                    var rivalSocketId = SocketUserMapper_1.default.GetSocketIdByUserId(rivalId);
+                    socket.emit('moveCoins', result);
+                    var rivalSocket = GetSocketById(rivalSocketId);
+                    rivalSocket.emit('moveCoins', result);
+                    result = result;
+                    if (result.isWon) {
+                        socket.emit('winner', result.isWon.coinColor);
+                        rivalSocket.emit('winner', result.isWon.coinColor);
+                    }
+                    if (!game.HandleCheckAbilityToPlayByDices() || result.isTurnOver) {
+                        socket.emit('start', game.currentTurn.whosTurn);
+                        rivalSocket.emit('start', game.currentTurn.whosTurn);
+                    }
+                }
             }
         }
     });
@@ -239,6 +255,7 @@ module.exports = function () {
     webSocket_1.default.on('connection', function (socket) {
         OnSocketConnection(socket);
         socket.on('disconnect', function (reason) {
+            console.log('user disconnected');
             OnSocketDisconnect(socket);
         });
     });

@@ -4,6 +4,8 @@ import SocketUserMapperService from '../Services/SocketUserMapper';
 import GameMapperService from '../Services/GameMapper';
 import GameInvitationMapper from '../Services/GameInvitationMapper';
 import Logic from '../Logic/logic';
+import MovementResults from '../Logic/Models/MovementResults';
+import Player from '../Logic/Models/Player';
 let RandomGameQueue: undefined | any;
 
 const OnSocketConnection = (socket: any) => {
@@ -138,13 +140,28 @@ const ThrowDices = (socket: any) => {
 }
 
 const Move = (socket: any) => {
-    socket.on('Move', (movement: any) => {
+    socket.on('move', (movement: any) => {
         const game = GameMapperService.GetGameByUser(socket.request.user._id);
         if(game){
             const userColor = GameMapperService.GetUserColor(socket.request.user._id) as boolean;
             if(game.currentTurn.whosTurn == userColor){
-                const result = game.HandleMove(movement.src, movement.dst);
-                
+                let result = game.HandleMove(movement.src, movement.dst);
+                if(result){
+                    const rivalId = GameMapperService.GetRivalByUser(socket.request.user._id);
+                    const rivalSocketId = SocketUserMapperService.GetSocketIdByUserId(rivalId) as string;
+                    socket.emit('moveCoins', result);
+                    const rivalSocket = GetSocketById(rivalSocketId);
+                    rivalSocket.emit('moveCoins', result);
+                    result = result as MovementResults;
+                    if(result.isWon){
+                        socket.emit('winner', (result.isWon as Player).coinColor);
+                        rivalSocket.emit('winner', (result.isWon as Player).coinColor);
+                    }
+                    if(!game.HandleCheckAbilityToPlayByDices() || result.isTurnOver) {
+                        socket.emit('start', game.currentTurn.whosTurn);
+                        rivalSocket.emit('start', game.currentTurn.whosTurn);
+                    }
+                }
             }
         }
     })
@@ -170,6 +187,7 @@ module.exports = () => {
     io.on('connection', (socket: any) => {
         OnSocketConnection(socket);
         socket.on('disconnect', (reason: any) => {
+            console.log('user disconnected');
             OnSocketDisconnect(socket);
         });
     });
