@@ -14,6 +14,9 @@ var Logic = /** @class */ (function () {
         this.ds = new DS_1.default();
         this.players = new Array(new Player_1.default(true), new Player_1.default(false));
     }
+    Logic.prototype.ReinitializePreGame = function () {
+        this.preGame = undefined;
+    };
     //endpoints:
     // Endpoint
     // to decide who starts

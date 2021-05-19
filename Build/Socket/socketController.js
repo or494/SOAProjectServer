@@ -53,6 +53,8 @@ var OnSocketConnection = function (socket) {
     AcceptGameInvitationListener(socket);
     ThrowOneDice(socket);
     RequestRandomGame(socket);
+    ThrowDices(socket);
+    Move(socket);
 };
 var RequestRandomGame = function (socket) {
     socket.on('requestRandomGame', function () {
@@ -157,19 +159,56 @@ var ThrowOneDice = function (socket) {
             socket.emit('oneDiceSucceed', diceResult);
             var secondUserId = GameMapper_1.default.GetRivalByUser(socket.request.user._id);
             var socketId = SocketUserMapper_1.default.GetSocketIdByUserId(secondUserId);
-            var rivalSocket = GetSocketById(socketId);
-            rivalSocket.emit('oneDiceRivalSucceed', diceResult);
-            if (game.preGame.whoStarts == 0) {
-                socket.emit('throwOneDiceAgain');
-                rivalSocket.emit('throwOneDiceAgain');
+            var rivalSocket_1 = GetSocketById(socketId);
+            rivalSocket_1.emit('oneDiceRivalSucceed', diceResult);
+            setTimeout(function () {
+                var _a, _b, _c;
+                if (((_a = game.preGame) === null || _a === void 0 ? void 0 : _a.whoStarts) == 0) {
+                    socket.emit('throwOneDiceAgain');
+                    rivalSocket_1.emit('throwOneDiceAgain');
+                    game.ReinitializePreGame();
+                }
+                else if (((_b = game.preGame) === null || _b === void 0 ? void 0 : _b.whoStarts) == 1) {
+                    socket.emit('start', false);
+                    rivalSocket_1.emit('start', false);
+                }
+                else if (((_c = game.preGame) === null || _c === void 0 ? void 0 : _c.whoStarts) == 2) {
+                    socket.emit('start', true);
+                    rivalSocket_1.emit('start', true);
+                }
+            }, 1500);
+        }
+    });
+};
+var ThrowDices = function (socket) {
+    socket.on('throwDices', function () {
+        var game = GameMapper_1.default.GetGameByUser(socket.request.user._id);
+        if (game) {
+            var userColor = GameMapper_1.default.GetUserColor(socket.request.user._id);
+            if (game.currentTurn.whosTurn == userColor) {
+                var dices = game.HandleThrowTwoDices();
+                var rivalId = GameMapper_1.default.GetRivalByUser(socket.request.user._id);
+                var rivalSocketId = SocketUserMapper_1.default.GetSocketIdByUserId(rivalId);
+                socket.emit('throwTwoDicesSucceed', dices);
+                var rivalSocket_2 = GetSocketById(rivalSocketId);
+                rivalSocket_2.emit('throwTwoDicesSucceed', dices);
+                setTimeout(function () {
+                    if (!game.HandleCheckAbilityToPlayByDices()) {
+                        socket.emit('start', game.currentTurn.whosTurn);
+                        rivalSocket_2.emit('start', game.currentTurn.whosTurn);
+                    }
+                }, 500);
             }
-            else if (game.preGame.whoStarts == 1) {
-                socket.emit('start', true);
-                rivalSocket.emit('start', true);
-            }
-            else if (game.preGame.whoStarts == 2) {
-                socket.emit('start', false);
-                rivalSocket.emit('start', false);
+        }
+    });
+};
+var Move = function (socket) {
+    socket.on('Move', function (movement) {
+        var game = GameMapper_1.default.GetGameByUser(socket.request.user._id);
+        if (game) {
+            var userColor = GameMapper_1.default.GetUserColor(socket.request.user._id);
+            if (game.currentTurn.whosTurn == userColor) {
+                var result = game.HandleMove(movement.src, movement.dst);
             }
         }
     });

@@ -7,7 +7,7 @@ import Turn from './Models/Turn'
 import PreGame from './Models/PreGame';
 
 class Logic {
-  preGame!: PreGame
+  preGame!: PreGame | undefined
   ds!: DS
   isGameOver: boolean = false
   players!: Array<Player>
@@ -16,6 +16,10 @@ class Logic {
   constructor() {
     this.ds = new DS()
     this.players = new Array<Player>(new Player(true), new Player(false))
+  }
+
+  ReinitializePreGame(): void {
+    this.preGame = undefined;
   }
 
   //endpoints:
