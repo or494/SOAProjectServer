@@ -39,56 +39,48 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.passport = exports.sessionMiddleware = exports.http = void 0;
 var express_1 = __importDefault(require("express"));
-var session = require("express-session");
-var passport = require("passport");
-exports.passport = passport;
-var app = express_1.default();
-var cors = require('cors');
-var server_basic_configurations_1 = __importDefault(require("./server-basic-configurations"));
-var authenticationController_1 = __importDefault(require("./Controllers/authenticationController"));
-var authentication_1 = __importDefault(require("./Authentication/authentication"));
-var usersController_1 = __importDefault(require("./Controllers/usersController"));
-var MongooseConnection_1 = require("./DB/DBInstance/MongooseConnection");
-app.set("port", server_basic_configurations_1.default.port);
-var corsOptions = {
-    origin: server_basic_configurations_1.default.clientUrl,
-    credentials: true
-};
-app.use(cors(corsOptions));
-app.use('/static', express_1.default.static('Build/StaticFiles'));
-var sessionMiddleware = session({ secret: "sessionsecret", resave: false, saveUninitialized: false });
-exports.sessionMiddleware = sessionMiddleware;
-app.use(sessionMiddleware);
-app.use(express_1.default.json());
-app.use(passport.initialize());
-app.use(passport.session());
-var http = require("http").Server(app);
-exports.http = http;
-app.use(function (req, res, next) {
-    console.log('>>> new request recieved');
-    next();
-});
-app.use(authentication_1.default);
-app.use(authenticationController_1.default);
-app.use(usersController_1.default);
-http.listen(server_basic_configurations_1.default.port, function () {
-    console.log(">>> listening on port " + server_basic_configurations_1.default.port);
-    InitializeWebSocket();
-});
-var InitializeWebSocket = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var io, LoadWebSocketFunctions;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, MongooseConnection_1.ConnectMongoDB()];
+var UserRepository_1 = require("../Repositories/UserRepository");
+var router = express_1.default.Router();
+router.get('/getFriends', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var isAuthenticated, friends;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                isAuthenticated = !!req.user;
+                if (!isAuthenticated) return [3 /*break*/, 2];
+                return [4 /*yield*/, UserRepository_1.GetFriendsById((_a = req.user) === null || _a === void 0 ? void 0 : _a._id)];
             case 1:
-                _a.sent();
-                io = require('./Socket/webSocket');
-                LoadWebSocketFunctions = require('./Socket/socketController');
-                LoadWebSocketFunctions();
-                return [2 /*return*/];
+                friends = _b.sent();
+                res.send(friends);
+                return [3 /*break*/, 3];
+            case 2:
+                res.status(401).send();
+                _b.label = 3;
+            case 3: return [2 /*return*/];
         }
     });
-}); };
-//# sourceMappingURL=index.js.map
+}); });
+router.get('/getChatData/:userId', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var isAuthenticated, chat;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                isAuthenticated = !!req.user;
+                if (!isAuthenticated) return [3 /*break*/, 2];
+                return [4 /*yield*/, UserRepository_1.GetMessages((_a = req.user) === null || _a === void 0 ? void 0 : _a._id, req.params.userId)];
+            case 1:
+                chat = _b.sent();
+                res.send(chat);
+                return [3 /*break*/, 3];
+            case 2:
+                res.status(401).send();
+                _b.label = 3;
+            case 3: return [2 /*return*/];
+        }
+    });
+}); });
+exports.default = router;
+//# sourceMappingURL=usersController.js.map

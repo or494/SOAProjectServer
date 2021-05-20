@@ -1,4 +1,5 @@
 import { Document } from "mongoose";
+import Chat from "./Chat";
 
 export default interface User extends Document{
     username: string;
@@ -8,7 +9,8 @@ export default interface User extends Document{
     victories: number;
     losts: number;
     joinedAt: Date,
-    lastSeen: Date
+    lastSeen: Date,
+    chats: Chat['_id'][]
 }
 
 const CreateUserInstance = (username: string, email: string, hashedPassword: string) => {

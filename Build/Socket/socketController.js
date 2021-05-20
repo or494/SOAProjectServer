@@ -55,6 +55,7 @@ var OnSocketConnection = function (socket) {
     RequestRandomGame(socket);
     ThrowDices(socket);
     Move(socket);
+    OnMessageSend(socket);
 };
 var RequestRandomGame = function (socket) {
     socket.on('requestRandomGame', function () {
@@ -232,6 +233,27 @@ var Move = function (socket) {
             }
         }
     });
+};
+var OnMessageSend = function (socket) {
+    socket.on('messageSend', function (message) { return __awaiter(void 0, void 0, void 0, function () {
+        var chat, recieverSocketId;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, UserRepository_1.GetUserById(message.target)];
+                case 1:
+                    if (!_a.sent()) return [3 /*break*/, 3];
+                    return [4 /*yield*/, UserRepository_1.AddMessageToChat(socket.request.user._id, message.target, message.content)];
+                case 2:
+                    chat = _a.sent();
+                    recieverSocketId = SocketUserMapper_1.default.GetSocketIdByUserId(message.target);
+                    if (recieverSocketId) {
+                        GetSocketById(recieverSocketId).emit("messageRecieved", { sender: socket.request.user._id, content: message.content, chatId: chat._id });
+                    }
+                    _a.label = 3;
+                case 3: return [2 /*return*/];
+            }
+        });
+    }); });
 };
 // checks if user is exist and connected
 var CheckIfUserExistAndConnected = function (id) { return __awaiter(void 0, void 0, void 0, function () {

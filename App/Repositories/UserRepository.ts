@@ -1,7 +1,11 @@
 import UserModel from '../DB/Schema/UserSchema';
+import ChatModel from '../DB/Schema/ChatSchema';
+import MessageModel from '../DB/Schema/MessageSchema';
 import ErrorResult from '../Models/ErrorResult';
 import Result from '../Models/Result';
-import { CreateUserInstance } from '../Models/User';
+import User, { CreateUserInstance } from '../Models/User';
+import { CreateMessageInstance } from '../Models/Message';
+import Chat, { CreateChatInstance } from '../Models/Chat';
 
 const CreateUser = async(username: string, email: string , password: string) => {
     let result = ValidateUserDetailes(username, email, password);
@@ -52,4 +56,57 @@ const GetUserByName = async(username: string) => {
     return await UserModel.findOne({username: username});
 }
 
-export {CreateUser, LoginValidation, GetUserById, GetUserByName};
+const GetFriendsById = async(userId: string) => {
+    let user = await GetUserById(userId);
+    if(user != null){
+        user = user as User;
+        return await GetAllFriendsData(user.friends);
+    } else return undefined;
+}
+
+const GetAllFriendsData = (friends: any[]) => {
+    return new Promise((resolve) => {
+        const friendsData: any[] = [];
+        friends.forEach(async friendId => {
+            const friend = await GetUserById(friendId);
+            const friendData = {id: friend?.id, username: friend?.username};
+            friendsData.push(friendData);
+            if(friendsData.length == friends.length) resolve(friendsData);
+        })
+    })
+}
+
+const AddMessageToChat = async(sender: string, reciever: string, content: string) => {
+    let chat = await ChatModel.findOne({members: [sender, reciever]} || {members: [reciever, sender]});
+    if(chat) chat = chat as Chat;
+    else{
+        chat = await ChatModel.create(CreateChatInstance(sender, reciever));
+        let user = await GetUserById(sender) as User;
+        user.chats.push(chat._id);
+        user.save();
+        user = await GetUserById(reciever) as User;
+        user.chats.push(chat._id);
+        user.save();
+    }
+    const message = CreateMessageInstance(sender, reciever, content);
+    chat.messages.push(message);
+    await chat.save()
+    return chat;
+}
+
+const GetMessages = async(user1: User['_id'], user2: User['_id']) => {
+    const chat = await ChatModel.findOne({members: [user1, user2]} || {members: [user2, user1]});
+    return await GetAllMessagesFromChat(chat as Chat);
+}
+
+const GetAllMessagesFromChat = (chat: Chat) => {
+    return new Promise((resolve) => {
+        const messages: any[] = [];
+        chat.messages.forEach(async messageId => {
+            messages.push(await MessageModel.findById(messageId));
+            if(messages.length == chat.messages.length) resolve(messages);
+        })
+    })
+}
+
+export {CreateUser, LoginValidation, GetUserById, GetUserByName, GetFriendsById, AddMessageToChat, GetMessages};

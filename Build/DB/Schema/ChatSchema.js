@@ -21,16 +21,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = __importStar(require("mongoose"));
 var ObjectId = mongoose_1.Schema.Types.ObjectId;
-var UserSchema = new mongoose_1.Schema({
-    username: { type: String, unique: true, required: true },
-    email: { type: String, unique: true, required: true },
-    password: { type: String, required: true },
-    friends: [ObjectId],
-    victories: Number,
-    losts: Number,
-    joinedAt: Date,
-    lastSeen: Date,
-    chats: [ObjectId]
+var ChatSchema = new mongoose_1.Schema({
+    messages: [ObjectId],
+    members: [ObjectId]
 });
-exports.default = mongoose_1.default.model('User', UserSchema);
-//# sourceMappingURL=UserSchema.js.map
+exports.default = mongoose_1.default.model('Chat', ChatSchema);
+//# sourceMappingURL=ChatSchema.js.map

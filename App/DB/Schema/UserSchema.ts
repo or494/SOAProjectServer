@@ -10,7 +10,8 @@ const UserSchema = new Schema({
     victories: Number,
     losts: Number,
     joinedAt: Date,
-    lastSeen: Date
+    lastSeen: Date,
+    chats: [ObjectId]
 });
 
 export default mongoose.model<User>('User', UserSchema);

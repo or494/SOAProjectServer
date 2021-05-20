@@ -1,5 +1,5 @@
 import io from './webSocket';
-import { GetUserById } from '../Repositories/UserRepository';
+import { AddMessageToChat, GetUserById } from '../Repositories/UserRepository';
 import SocketUserMapperService from '../Services/SocketUserMapper';
 import GameMapperService from '../Services/GameMapper';
 import GameInvitationMapper from '../Services/GameInvitationMapper';
@@ -17,6 +17,7 @@ const OnSocketConnection = (socket: any) => {
     RequestRandomGame(socket);
     ThrowDices(socket);
     Move(socket);
+    OnMessageSend(socket);
 }
 
 const RequestRandomGame = (socket: any) => {
@@ -168,6 +169,18 @@ const Move = (socket: any) => {
                         rivalSocket.emit('start', game.currentTurn.whosTurn);
                     }
                 }
+            }
+        }
+    })
+}
+
+const OnMessageSend = (socket: any) => {
+    socket.on('messageSend', async(message: any) => {
+        if(await GetUserById(message.target)) {
+            const chat = await AddMessageToChat(socket.request.user._id, message.target, message.content);
+            const recieverSocketId = SocketUserMapperService.GetSocketIdByUserId(message.target);
+            if(recieverSocketId){
+                GetSocketById(recieverSocketId).emit("messageRecieved", {sender: socket.request.user._id, content: message.content, chatId: chat._id});
             }
         }
     })

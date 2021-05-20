@@ -6,6 +6,7 @@ const cors = require('cors');
 import configurations from './server-basic-configurations';
 import authController from './Controllers/authenticationController';
 import authentication from './Authentication/authentication';
+import usersController from './Controllers/usersController';
 import { ConnectMongoDB } from './DB/DBInstance/MongooseConnection';
 
 app.set("port", configurations.port);
@@ -33,6 +34,7 @@ app.use((req,res,next) => {
 app.use(authentication);
 
 app.use(authController);
+app.use(usersController);
 
 http.listen(configurations.port, function() {
   console.log(">>> listening on port " + configurations.port);
