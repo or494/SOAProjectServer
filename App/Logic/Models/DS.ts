@@ -7,7 +7,7 @@ class DS {
     constructor() {
         for (let i = 0; i < this.board.length; i++)
             this.board[i] = new Array<Coin>()
-
+            
         this.board[0].push(new Coin(false), new Coin(false))
         this.board[5].push(
             new Coin(true),
@@ -82,6 +82,8 @@ class DS {
     }
 
     // check speacial case of letting coins out on a step which is different from dice results
+    // takes a coin color and array of numbers, checks if there is a coin of this color between the highest value of array
+    // as a position in the relative home area to the home area end
     IsPossibleToTakeOutCoinByNotExactSteps(playClr: boolean, stepsOption: Array<number>): boolean {
         // take out higher value between the dice results that not have been played
         let maximumValue = stepsOption.length > 1 ? Math.max(stepsOption[0], stepsOption[1]) : stepsOption[0]
@@ -89,17 +91,15 @@ class DS {
         if (playClr) {
             start = START_BLACK_END_WHITE_INDEX + HOME_AREA_LENGTH - 1
             end = START_BLACK_END_WHITE_INDEX + maximumValue - 1
-            if (start === end) return false;
             // check if there are coins positioned higher of maximum value on dices, you cant take out yet
-            for (let i = Math.min(start, end) + 1; i <= Math.max(start, end); i++) {
+            for (let i = Math.min(start, end); i <= Math.max(start, end); i++) {
                 if (this.board[i].find((c) => c.color === playClr)) return false
             }
             return true
         } else {
             start = START_WHITE_END_BLACK_INDEX - HOME_AREA_LENGTH + 1
             end = START_WHITE_END_BLACK_INDEX - maximumValue + 1
-            if (start === end) return false;
-            for (let i = Math.min(start, end); i <= Math.max(start, end) - 1; i++) {
+            for (let i = Math.min(start, end); i <= Math.max(start, end); i++) {
                 if (this.board[i].find((c) => c.color === playClr)) return false
             }
             return true

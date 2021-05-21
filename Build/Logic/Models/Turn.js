@@ -12,12 +12,29 @@ var Turn = /** @class */ (function () {
     };
     Turn.prototype.UpdateTurn = function (stepPlayed) {
         this.movementsLeftCounter--;
-        this.stepsLeft = this.stepsLeft.filter(function (n) { return n !== stepPlayed; });
-        //if its a double on the dices and therefore all numbers have been removed
-        if ((this.stepsLeft === undefined || this.stepsLeft.length === 0) &&
-            this.movementsLeftCounter !== 0) {
-            for (var i = 0; i < this.movementsLeftCounter; i++) {
-                this.stepsLeft.push(stepPlayed);
+        //if stepped by dice
+        if (this.stepsLeft.includes(stepPlayed)) {
+            console.log("played: " + stepPlayed);
+            // if is not a double
+            if (this.stepsLeft.some(function (n) { return n !== stepPlayed; })) {
+                this.stepsLeft = this.stepsLeft.filter(function (n) { return n !== stepPlayed; });
+            }
+            else {
+                this.stepsLeft.pop();
+            }
+        }
+        // if stepped not according dice (approved)
+        else {
+            // if is not a double
+            if (this.stepsLeft.some(function (n) { return n !== stepPlayed; })) {
+                //poping the bigger value - this is the "step" that has been made
+                var biggerElement_1 = Math.max(this.stepsLeft[0], this.stepsLeft[1]);
+                console.log("played: " + biggerElement_1);
+                this.stepsLeft = this.stepsLeft.filter(function (n) { return n !== biggerElement_1; });
+            }
+            else {
+                console.log("played: " + this.stepsLeft[0]);
+                this.stepsLeft.pop();
             }
         }
     };

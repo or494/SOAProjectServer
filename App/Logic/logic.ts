@@ -26,15 +26,15 @@ class Logic {
   // Endpoint
   // to decide who starts
   HandleThrowOneDice(color: boolean): number {
-    if(this.preGame == undefined){
+    if (this.preGame == undefined) {
       this.preGame = new PreGame(color, Math.floor(Math.random() * 6 + 1));
       return this.preGame.cube;
-    } else{
+    } else {
       const number = Math.floor(Math.random() * 6 + 1);
-      if(this.preGame.player)
+      if (this.preGame.player)
         this.preGame.whoStarts = this.HandleWhoStarts(this.preGame.cube, number);
       else
-        this.preGame.whoStarts = this.HandleWhoStarts( number,this.preGame.cube);
+        this.preGame.whoStarts = this.HandleWhoStarts(number, this.preGame.cube);
 
       return number;
     }
@@ -100,6 +100,10 @@ class Logic {
     return answer
   }
 
+  IsMoveLegalByDices(src: number, dst: number): boolean {
+    return this.currentTurn.stepsLeft.includes(Math.abs(dst - src));
+  }
+
   //Endpoint
   // Try To make user's move, return failure or MovementResults object
   HandleMove(
@@ -124,18 +128,24 @@ class Logic {
       if (this.ds.board[src].length === 0) return false;
       else coinClr = this.ds.board[src][0].color
     }
-    // checks: if played with a coin of its own, if played the right direction, 
-    // if played according to the dice results , or not according to results BUT STILL ALLOWED under very specific case of taking out coin under special case
+    // checks: if not played with a coin of its own, if not played the right direction, 
+    // if not played according to the dice results , or not according to results BUT STILL ALLOWED under very specific case of taking out coin under special case
+    let isSpecialLowAllowed = this.ds.IsPossibleToTakeOutCoinByNotExactSteps(coinClr, this.currentTurn.stepsLeft);
+    let arr = new Array<number>();
+    let value: number = Math.abs(src-dst);
+    value = value+1;
+    arr.push(value);
+    let isTheRightCoinToMoveBySpecialLow = this.ds.IsPossibleToTakeOutCoinByNotExactSteps(coinClr, arr);
+    let isStepByDices = this.IsMoveLegalByDices(src, dst)
     if (
       this.currentTurn.whosTurn !== coinClr ||
       !this.IsRightDirectionPlayed(src, dst, coinClr) ||
       (
-        !this.currentTurn.stepsLeft.includes(Math.abs(dst - src)) &&
+        !isStepByDices &&
         (
           !this.ds.IsTimeToTakeOutCoins(coinClr) ||
           (dst !== START_WHITE_END_BLACK_INDEX + 1 && dst !== START_BLACK_END_WHITE_INDEX - 1) ||
-          !this.ds.IsPossibleToTakeOutCoinByNotExactSteps(coinClr, [Math.abs(dst - src)])
-
+          !(isSpecialLowAllowed && isTheRightCoinToMoveBySpecialLow)
         )
       )
     ) {
@@ -171,13 +181,13 @@ class Logic {
         return false
       }
       else {
-        resultOfMove = this.ds.MakeAMove(coinClr, src, dst, undefined)
-        if (resultOfMove === false) return false
-        else {
-          return this.UpdateLogicByMovementConclusions(resultOfMove)
+          resultOfMove = this.ds.MakeAMove(coinClr, src, dst, undefined)
+          if (resultOfMove === false) return false
+          else {
+            return this.UpdateLogicByMovementConclusions(resultOfMove)
+          }
         }
       }
-    }
     // regular movement option : into the board borders, no eaten coins return or taking out one
     else {
       resultOfMove = this.ds.MakeAMove(coinClr, src, dst, undefined)
@@ -187,6 +197,7 @@ class Logic {
       }
     }
   }
+
 
   // updates turn, players data and winner status
   UpdateLogicByMovementConclusions(
@@ -242,8 +253,10 @@ class Logic {
 }
 
 export default Logic;
+
+// let bl = new Logic();
 // Checking Section
-/*
+
 // do {
 //   var num1 = bl.HandleThrowOneDice()
 //   var num2 = bl.HandleThrowOneDice()
@@ -254,25 +267,25 @@ export default Logic;
 // console.log(bl.HandleCheckAbilityToPlayByDices())
 // debugger;
 
-bl.currentTurn = new Turn(true);
-bl.currentTurn.movementsLeftCounter = 2;
-bl.currentTurn.stepsLeft = new Array<number>(3, 1)
-//bl.currentTurn.stepsLeft = [1]
+// bl.currentTurn = new Turn(false);
+// bl.currentTurn.movementsLeftCounter = 1;
+// bl.currentTurn.stepsLeft = new Array<number>()
+// bl.currentTurn.stepsLeft = [6]
 // adding eaten coin: 
-//bl.players.find(p => p.coinColor === true)?.eatenCoins.push(new Coin(true))
-bl.ds.board = new Array<Array<Coin>>(24);
-for (let i = 0; i < bl.ds.board.length; i++)
-  bl.ds.board[i] = new Array<Coin>()
-//bl.ds.board[5].push(new Coin(true));
-bl.ds.board[23].push(new Coin(true));
-bl.ds.board[22].push(new Coin(false), new Coin(false));
-//bl.ds.board[11].push(new Coin(false));
+// bl.players.find(p => p.coinColor === true)?.eatenCoins.push(new Coin(true))
+// bl.ds.board = new Array<Array<Coin>>(24);
+// for (let i = 0; i < bl.ds.board.length; i++)
+//   bl.ds.board[i] = new Array<Coin>()
+// bl.ds.board[19].push(new Coin(false));
+// bl.ds.board[20].push(new Coin(false));
+// bl.ds.board[22].push(new Coin(false), new Coin(false));
+// bl.ds.board[11].push(new Coin(false));
 // bl.ds.board[7          ].push(new Coin(true))
 // bl.ds.board[12].push(new Coin(false), new Coin(false));
 // bl.ds.board[13].push(new Coin(true))
-//answer
-//console.log(`Can I go with ${bl.currentTurn.stepsLeft}?: ${bl.HandleCheckAbilityToPlayByDices()}`)
-var res = bl.HandleMove(23,22)
-console.log(res);
-debugger;
-*/
+// answer
+// console.log(`Can I go with ${bl.currentTurn.stepsLeft}?: ${bl.HandleCheckAbilityToPlayByDices()}`)
+// var res = bl.HandleMove(23,22)
+// var res = bl.HandleCheckAbilityToPlayByDices();
+// console.log(res);
+// debugger;

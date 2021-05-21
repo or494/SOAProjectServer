@@ -82,6 +82,9 @@ var Logic = /** @class */ (function () {
             this.currentTurn = new Turn_1.default(!this.currentTurn.whosTurn);
         return answer;
     };
+    Logic.prototype.IsMoveLegalByDices = function (src, dst) {
+        return this.currentTurn.stepsLeft.includes(Math.abs(dst - src));
+    };
     //Endpoint
     // Try To make user's move, return failure or MovementResults object
     Logic.prototype.HandleMove = function (src, dst) {
@@ -107,14 +110,21 @@ var Logic = /** @class */ (function () {
             else
                 coinClr = this.ds.board[src][0].color;
         }
-        // checks: if played with a coin of its own, if played the right direction, 
-        // if played according to the dice results , or not according to results BUT STILL ALLOWED under very specific case of taking out coin under special case
+        // checks: if not played with a coin of its own, if not played the right direction, 
+        // if not played according to the dice results , or not according to results BUT STILL ALLOWED under very specific case of taking out coin under special case
+        var isSpecialLowAllowed = this.ds.IsPossibleToTakeOutCoinByNotExactSteps(coinClr, this.currentTurn.stepsLeft);
+        var arr = new Array();
+        var value = Math.abs(src - dst);
+        value = value + 1;
+        arr.push(value);
+        var isTheRightCoinToMoveBySpecialLow = this.ds.IsPossibleToTakeOutCoinByNotExactSteps(coinClr, arr);
+        var isStepByDices = this.IsMoveLegalByDices(src, dst);
         if (this.currentTurn.whosTurn !== coinClr ||
             !this.IsRightDirectionPlayed(src, dst, coinClr) ||
-            (!this.currentTurn.stepsLeft.includes(Math.abs(dst - src)) &&
+            (!isStepByDices &&
                 (!this.ds.IsTimeToTakeOutCoins(coinClr) ||
                     (dst !== Consts_1.START_WHITE_END_BLACK_INDEX + 1 && dst !== Consts_1.START_BLACK_END_WHITE_INDEX - 1) ||
-                    !this.ds.IsPossibleToTakeOutCoinByNotExactSteps(coinClr, [Math.abs(dst - src)])))) {
+                    !(isSpecialLowAllowed && isTheRightCoinToMoveBySpecialLow)))) {
             return false;
         }
         // check if a moved asked clashes with "eated coins" rules
@@ -213,8 +223,8 @@ var Logic = /** @class */ (function () {
     return Logic;
 }());
 exports.default = Logic;
+// let bl = new Logic();
 // Checking Section
-/*
 // do {
 //   var num1 = bl.HandleThrowOneDice()
 //   var num2 = bl.HandleThrowOneDice()
@@ -224,27 +234,26 @@ exports.default = Logic;
 // console.log(bl.HandleThrowTwoDices())
 // console.log(bl.HandleCheckAbilityToPlayByDices())
 // debugger;
-
-bl.currentTurn = new Turn(true);
-bl.currentTurn.movementsLeftCounter = 2;
-bl.currentTurn.stepsLeft = new Array<number>(3, 1)
-//bl.currentTurn.stepsLeft = [1]
-// adding eaten coin:
-//bl.players.find(p => p.coinColor === true)?.eatenCoins.push(new Coin(true))
-bl.ds.board = new Array<Array<Coin>>(24);
-for (let i = 0; i < bl.ds.board.length; i++)
-  bl.ds.board[i] = new Array<Coin>()
-//bl.ds.board[5].push(new Coin(true));
-bl.ds.board[23].push(new Coin(true));
-bl.ds.board[22].push(new Coin(false), new Coin(false));
-//bl.ds.board[11].push(new Coin(false));
+// bl.currentTurn = new Turn(false);
+// bl.currentTurn.movementsLeftCounter = 1;
+// bl.currentTurn.stepsLeft = new Array<number>()
+// bl.currentTurn.stepsLeft = [6]
+// adding eaten coin: 
+// bl.players.find(p => p.coinColor === true)?.eatenCoins.push(new Coin(true))
+// bl.ds.board = new Array<Array<Coin>>(24);
+// for (let i = 0; i < bl.ds.board.length; i++)
+//   bl.ds.board[i] = new Array<Coin>()
+// bl.ds.board[19].push(new Coin(false));
+// bl.ds.board[20].push(new Coin(false));
+// bl.ds.board[22].push(new Coin(false), new Coin(false));
+// bl.ds.board[11].push(new Coin(false));
 // bl.ds.board[7          ].push(new Coin(true))
 // bl.ds.board[12].push(new Coin(false), new Coin(false));
 // bl.ds.board[13].push(new Coin(true))
-//answer
-//console.log(`Can I go with ${bl.currentTurn.stepsLeft}?: ${bl.HandleCheckAbilityToPlayByDices()}`)
-var res = bl.HandleMove(23,22)
-console.log(res);
-debugger;
-*/ 
+// answer
+// console.log(`Can I go with ${bl.currentTurn.stepsLeft}?: ${bl.HandleCheckAbilityToPlayByDices()}`)
+// var res = bl.HandleMove(23,22)
+// var res = bl.HandleCheckAbilityToPlayByDices();
+// console.log(res);
+// debugger;
 //# sourceMappingURL=logic.js.map
