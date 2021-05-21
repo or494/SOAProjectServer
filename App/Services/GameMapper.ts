@@ -10,6 +10,8 @@ class GameMapper<T>{
         this.gameUserMapper.set(game, [user1Id, user2Id]);
         this.userGameMapper.set(user1Id, game);
         this.userGameMapper.set(user2Id,game);
+        console.log('add')
+        console.log(this);
     }
 
     Remove = (userId: string) => {
@@ -20,14 +22,20 @@ class GameMapper<T>{
         this.userGameMapper.delete(userId);
         this.userGameMapper.delete(secondUserId);
         this.gameUserMapper.delete(game);
+        console.log('remove')
+        console.log(this);
     }
 
     GetGameByUser = (userId: string) => {
+        console.log('get')
+        console.log(this);
         const game = this.userGameMapper.get(userId);
         return game;
     }
 
     GetUserColor = (userId: string) => {
+        console.log('get')
+        console.log(this);
         const game = this.userGameMapper.get(userId) as T;
         const usersArray = this.gameUserMapper.get(game) as string[];
         if(usersArray[0] == userId) return true;
@@ -36,6 +44,8 @@ class GameMapper<T>{
     }
 
     GetRivalByUser = (userId: string) => {
+        console.log('get')
+        console.log(this);
         const game = this.userGameMapper.get(userId);
         if(game === undefined) throw new Error('game is not defined');
         const gameParticipants = this.gameUserMapper.get(game as T) as string[];

@@ -11,6 +11,8 @@ var GameMapper = /** @class */ (function () {
             _this.gameUserMapper.set(game, [user1Id, user2Id]);
             _this.userGameMapper.set(user1Id, game);
             _this.userGameMapper.set(user2Id, game);
+            console.log('add');
+            console.log(_this);
         };
         this.Remove = function (userId) {
             var game = _this.userGameMapper.get(userId);
@@ -21,12 +23,18 @@ var GameMapper = /** @class */ (function () {
             _this.userGameMapper.delete(userId);
             _this.userGameMapper.delete(secondUserId);
             _this.gameUserMapper.delete(game);
+            console.log('remove');
+            console.log(_this);
         };
         this.GetGameByUser = function (userId) {
+            console.log('get');
+            console.log(_this);
             var game = _this.userGameMapper.get(userId);
             return game;
         };
         this.GetUserColor = function (userId) {
+            console.log('get');
+            console.log(_this);
             var game = _this.userGameMapper.get(userId);
             var usersArray = _this.gameUserMapper.get(game);
             if (usersArray[0] == userId)
@@ -37,6 +45,8 @@ var GameMapper = /** @class */ (function () {
                 return undefined;
         };
         this.GetRivalByUser = function (userId) {
+            console.log('get');
+            console.log(_this);
             var game = _this.userGameMapper.get(userId);
             if (game === undefined)
                 throw new Error('game is not defined');

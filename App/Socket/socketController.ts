@@ -18,6 +18,7 @@ const OnSocketConnection = (socket: any) => {
     ThrowDices(socket);
     Move(socket);
     OnMessageSend(socket);
+    OnInvokeLeaveGame(socket);
 }
 
 const RequestRandomGame = (socket: any) => {
@@ -179,6 +180,7 @@ const OnMessageSend = (socket: any) => {
         if(await GetUserById(message.target)) {
             const chat = await AddMessageToChat(socket.request.user._id, message.target, message.content);
             const recieverSocketId = SocketUserMapperService.GetSocketIdByUserId(message.target);
+            console.log(SocketUserMapperService);
             if(recieverSocketId){
                 GetSocketById(recieverSocketId).emit("messageRecieved", {sender: socket.request.user._id, content: message.content, chatId: chat._id});
             }
@@ -192,14 +194,25 @@ const CheckIfUserExistAndConnected = async(id: any) => {
     else return true;
 }
 
-// checks if game exist in game mapper
-const CheckIfGameExist = (socket: any) => {
-    const game = GameMapperService.GetGameByUser(socket.request.user._id);
-    return game == undefined ? false : true;
-}
-
 const GetSocketById = (socketId: string) => {
     return io.of('/').sockets.get(socketId);
+}
+const OnInvokeLeaveGame = (socket: any) => {
+    socket.on('leaveGame', () => {
+        LeaveGame(socket);
+    });
+}
+
+const LeaveGame = (socket: any) => {
+    const game = GameMapperService.GetGameByUser(socket.request.user._id);
+    if(game){
+        const rivalId = GameMapperService.GetRivalByUser(socket.request.user._id);
+        const rivalSocketId = SocketUserMapperService.GetSocketIdByUserId(rivalId);
+        if(rivalSocketId)
+            GetSocketById(rivalSocketId).emit('winner', GameMapperService.GetUserColor(rivalId));
+
+        GameMapperService.Remove(rivalId);
+    }
 }
 
 module.exports = () => {
@@ -213,6 +226,7 @@ module.exports = () => {
 }
 
 const OnSocketDisconnect = (socket: any) => {
+    LeaveGame(socket);
     CleanFromGameInvitationMapper(socket);
     CleanFromUserSocketMapper(socket);
     InformFriendsOnDisconnection(socket);

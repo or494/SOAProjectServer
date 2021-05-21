@@ -56,6 +56,7 @@ var OnSocketConnection = function (socket) {
     ThrowDices(socket);
     Move(socket);
     OnMessageSend(socket);
+    OnInvokeLeaveGame(socket);
 };
 var RequestRandomGame = function (socket) {
     socket.on('requestRandomGame', function () {
@@ -246,6 +247,7 @@ var OnMessageSend = function (socket) {
                 case 2:
                     chat = _a.sent();
                     recieverSocketId = SocketUserMapper_1.default.GetSocketIdByUserId(message.target);
+                    console.log(SocketUserMapper_1.default);
                     if (recieverSocketId) {
                         GetSocketById(recieverSocketId).emit("messageRecieved", { sender: socket.request.user._id, content: message.content, chatId: chat._id });
                     }
@@ -269,13 +271,23 @@ var CheckIfUserExistAndConnected = function (id) { return __awaiter(void 0, void
         }
     });
 }); };
-// checks if game exist in game mapper
-var CheckIfGameExist = function (socket) {
-    var game = GameMapper_1.default.GetGameByUser(socket.request.user._id);
-    return game == undefined ? false : true;
-};
 var GetSocketById = function (socketId) {
     return webSocket_1.default.of('/').sockets.get(socketId);
+};
+var OnInvokeLeaveGame = function (socket) {
+    socket.on('leaveGame', function () {
+        LeaveGame(socket);
+    });
+};
+var LeaveGame = function (socket) {
+    var game = GameMapper_1.default.GetGameByUser(socket.request.user._id);
+    if (game) {
+        var rivalId = GameMapper_1.default.GetRivalByUser(socket.request.user._id);
+        var rivalSocketId = SocketUserMapper_1.default.GetSocketIdByUserId(rivalId);
+        if (rivalSocketId)
+            GetSocketById(rivalSocketId).emit('winner', GameMapper_1.default.GetUserColor(rivalId));
+        GameMapper_1.default.Remove(rivalId);
+    }
 };
 module.exports = function () {
     webSocket_1.default.on('connection', function (socket) {
@@ -287,6 +299,7 @@ module.exports = function () {
     });
 };
 var OnSocketDisconnect = function (socket) {
+    LeaveGame(socket);
     CleanFromGameInvitationMapper(socket);
     CleanFromUserSocketMapper(socket);
     InformFriendsOnDisconnection(socket);

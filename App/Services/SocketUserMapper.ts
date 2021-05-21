@@ -3,6 +3,9 @@ class SocketUserMapper{
     private userSocket = new Map<string, string>();
 
     Add = (userId: string, socketId: string) => {
+        if(this.userSocket.get(userId) != undefined){
+            this.RemoveByUserId(userId);
+        }
         this.socketUser.set(socketId, userId);
         this.userSocket.set(userId, socketId);
     }
@@ -13,6 +16,7 @@ class SocketUserMapper{
         this.userSocket.delete(userId);
         this.socketUser.delete(socketId as string);
     }
+    
 
     RemoveBySocketId = (socketId: string) => {
         const userId = this.socketUser.get(socketId);
@@ -24,6 +28,7 @@ class SocketUserMapper{
     GetSocketIdByUserId = (userId: string) => {
         const socketId = this.userSocket.get(userId);
         return socketId;
+        
     }
 
     GetUserIdBySocketId = (socketId: string) => {

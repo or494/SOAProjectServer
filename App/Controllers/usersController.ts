@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
 import User from '../Models/User';
-import {GetFriendsById, GetMessages} from '../Repositories/UserRepository';
+import {GetFriendsById, GetAllUserChats} from '../Repositories/UserRepository';
 const router: Router = express.Router();
 
 
@@ -15,11 +15,11 @@ router.get('/getFriends', async (req, res) => {
     }
 });
 
-router.get('/getChatData/:userId', async(req, res) => {
+router.get('/getUserChats', async(req, res) => {
     const isAuthenticated = !!req.user;
     if (isAuthenticated) {
         // @ts-ignore
-        const chat = await GetMessages(req.user?._id, req.params.userId);
+        const chat = await GetAllUserChats(req.user?._id);
         res.send(chat);
     } else{
         res.status(401).send();

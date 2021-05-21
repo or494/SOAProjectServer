@@ -52,11 +52,9 @@ index_1.passport.use(new LocalStrategy(function (username, password, done) { ret
             case 1:
                 IsLoginValid = _a.sent();
                 if (IsLoginValid !== null) {
-                    console.log("authentication OK");
                     return [2 /*return*/, done(null, IsLoginValid)];
                 }
                 else {
-                    console.log("wrong credentials");
                     return [2 /*return*/, done(null, false)];
                 }
                 return [2 /*return*/];

@@ -4,7 +4,7 @@ import MessageModel from '../DB/Schema/MessageSchema';
 import ErrorResult from '../Models/ErrorResult';
 import Result from '../Models/Result';
 import User, { CreateUserInstance } from '../Models/User';
-import { CreateMessageInstance } from '../Models/Message';
+import Message, { CreateMessageInstance } from '../Models/Message';
 import Chat, { CreateChatInstance } from '../Models/Chat';
 
 const CreateUser = async(username: string, email: string , password: string) => {
@@ -77,7 +77,8 @@ const GetAllFriendsData = (friends: any[]) => {
 }
 
 const AddMessageToChat = async(sender: string, reciever: string, content: string) => {
-    let chat = await ChatModel.findOne({members: [sender, reciever]} || {members: [reciever, sender]});
+    let chat = await ChatModel.findOne({members: [sender, reciever]});
+    if(!chat) chat = await ChatModel.findOne({members: [reciever, sender]});
     if(chat) chat = chat as Chat;
     else{
         chat = await ChatModel.create(CreateChatInstance(sender, reciever));
@@ -88,25 +89,42 @@ const AddMessageToChat = async(sender: string, reciever: string, content: string
         user.chats.push(chat._id);
         user.save();
     }
-    const message = CreateMessageInstance(sender, reciever, content);
-    chat.messages.push(message);
+    let message = CreateMessageInstance(sender, reciever, content);
+    message = await MessageModel.create(message);
+    chat.messages.push(message.id);
     await chat.save()
     return chat;
 }
 
-const GetMessages = async(user1: User['_id'], user2: User['_id']) => {
-    const chat = await ChatModel.findOne({members: [user1, user2]} || {members: [user2, user1]});
-    return await GetAllMessagesFromChat(chat as Chat);
+const GetAllUserChats = async(userId: User['_id']) => {
+    const user = await GetUserById(userId);
+    return await GetAllChatsData((user?.chats) as string[], user?._id);
 }
 
-const GetAllMessagesFromChat = (chat: Chat) => {
+const GetAllChatsData = (chatsId: any[], userId: any) => {
+    return new Promise((resolve) => {
+        const chatsData: any[] = [];
+        let counter = 0;
+        chatsId.forEach(async chatId => {
+            const chat = await ChatModel.findById(chatId);
+            const secondUserId = chat?.members[0].toString() == userId.toString() ? chat?.members[1] : chat?.members[0];
+            const messages = await GetAllChatMessages(chat as Chat);
+            chatsData.push({userId: secondUserId, messages: messages});
+            counter++;
+            if(counter == chatsId.length) resolve(chatsData);
+        })
+    })
+}
+
+const GetAllChatMessages = async(chat: Chat) => {
     return new Promise((resolve) => {
         const messages: any[] = [];
         chat.messages.forEach(async messageId => {
-            messages.push(await MessageModel.findById(messageId));
+            const message = await MessageModel.findById(messageId);
+            messages.push(message);
             if(messages.length == chat.messages.length) resolve(messages);
         })
     })
 }
 
-export {CreateUser, LoginValidation, GetUserById, GetUserByName, GetFriendsById, AddMessageToChat, GetMessages};
+export {CreateUser, LoginValidation, GetUserById, GetUserByName, GetFriendsById, AddMessageToChat, GetAllUserChats};

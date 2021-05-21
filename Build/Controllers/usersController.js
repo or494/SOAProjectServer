@@ -62,7 +62,7 @@ router.get('/getFriends', function (req, res) { return __awaiter(void 0, void 0,
         }
     });
 }); });
-router.get('/getChatData/:userId', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+router.get('/getUserChats', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var isAuthenticated, chat;
     var _a;
     return __generator(this, function (_b) {
@@ -70,7 +70,7 @@ router.get('/getChatData/:userId', function (req, res) { return __awaiter(void 0
             case 0:
                 isAuthenticated = !!req.user;
                 if (!isAuthenticated) return [3 /*break*/, 2];
-                return [4 /*yield*/, UserRepository_1.GetMessages((_a = req.user) === null || _a === void 0 ? void 0 : _a._id, req.params.userId)];
+                return [4 /*yield*/, UserRepository_1.GetAllUserChats((_a = req.user) === null || _a === void 0 ? void 0 : _a._id)];
             case 1:
                 chat = _b.sent();
                 res.send(chat);

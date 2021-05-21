@@ -6,6 +6,9 @@ var SocketUserMapper = /** @class */ (function () {
         this.socketUser = new Map();
         this.userSocket = new Map();
         this.Add = function (userId, socketId) {
+            if (_this.userSocket.get(userId) != undefined) {
+                _this.RemoveByUserId(userId);
+            }
             _this.socketUser.set(socketId, userId);
             _this.userSocket.set(userId, socketId);
         };

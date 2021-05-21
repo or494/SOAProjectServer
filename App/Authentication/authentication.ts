@@ -8,10 +8,8 @@ passport.use(
   new LocalStrategy(async(username:any, password:any, done:any) => {
     const IsLoginValid = await LoginValidation(username, password);
     if (IsLoginValid !== null) {
-      console.log("authentication OK");
       return done(null, IsLoginValid);
     } else {
-      console.log("wrong credentials");
       return done(null, false);
     }
   })
