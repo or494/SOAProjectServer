@@ -216,12 +216,12 @@ var Move = function (socket) {
             if (game.currentTurn.whosTurn == userColor) {
                 var result = game.HandleMove(movement.src, movement.dst);
                 if (result) {
+                    result = result;
                     var rivalId = GameMapper_1.default.GetRivalByUser(socket.request.user._id);
                     var rivalSocketId = SocketUserMapper_1.default.GetSocketIdByUserId(rivalId);
                     socket.emit('moveCoins', result);
                     var rivalSocket = GetSocketById(rivalSocketId);
                     rivalSocket.emit('moveCoins', result);
-                    result = result;
                     if (result.isWon) {
                         socket.emit('winner', result.isWon.coinColor);
                         rivalSocket.emit('winner', result.isWon.coinColor);

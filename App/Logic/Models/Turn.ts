@@ -13,11 +13,13 @@ class Turn {
     this.movementsLeftCounter = this.IsDouble() ? 4 : 2
   }
 
-  UpdateTurn(stepPlayed: number) {
+  UpdateTurn(stepPlayed: number): number {
+    let diceResultPlayed: number;
     this.movementsLeftCounter--
     //if stepped by dice
     if (this.stepsLeft.includes(stepPlayed)) {
-      console.log("played: "+stepPlayed)
+      diceResultPlayed = stepPlayed;
+      console.log("played if1: " + diceResultPlayed)
       // if is not a double
       if (this.stepsLeft.some(n => n !== stepPlayed)) {
         this.stepsLeft = this.stepsLeft.filter((n) => n !== stepPlayed)
@@ -26,20 +28,22 @@ class Turn {
         this.stepsLeft.pop();
       }
     }
-    // if stepped not according dice (approved)
     else {
       // if is not a double
       if (this.stepsLeft.some(n => n !== stepPlayed)) {
         //poping the bigger value - this is the "step" that has been made
         let biggerElement = Math.max(this.stepsLeft[0], this.stepsLeft[1]);
-        console.log("played: "+biggerElement)
+        diceResultPlayed = biggerElement;
+        console.log("played if2: " + diceResultPlayed)
         this.stepsLeft = this.stepsLeft.filter((n) => n !== biggerElement)
       }
       else {
-        console.log("played: "+this.stepsLeft[0]);
+        diceResultPlayed = this.stepsLeft[0];
+        console.log("played else: " + diceResultPlayed);
         this.stepsLeft.pop();
       }
     }
+    return diceResultPlayed;
   }
 
   private IsDouble() {

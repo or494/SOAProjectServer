@@ -193,11 +193,13 @@ var Logic = /** @class */ (function () {
             }
         }
         //update turn
-        this.currentTurn.UpdateTurn(Math.abs(resultOfMove.dst - resultOfMove.src));
+        var number = this.currentTurn.UpdateTurn(Math.abs(resultOfMove.dst - resultOfMove.src));
+        resultOfMove.diceStepPlayed = number;
         if (this.currentTurn.movementsLeftCounter === 0) {
             this.currentTurn = new Turn_1.default(!this.currentTurn.whosTurn);
             resultOfMove.isTurnOver = true;
         }
+        console.log(resultOfMove);
         return resultOfMove;
     };
     // check if player played in his direction of play, includes checking if src & dst not the same

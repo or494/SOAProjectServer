@@ -155,12 +155,13 @@ const Move = (socket: any) => {
             if(game.currentTurn.whosTurn == userColor){
                 let result = game.HandleMove(movement.src, movement.dst);
                 if(result){
+                    result = result as MovementResults;
                     const rivalId = GameMapperService.GetRivalByUser(socket.request.user._id);
                     const rivalSocketId = SocketUserMapperService.GetSocketIdByUserId(rivalId) as string;
                     socket.emit('moveCoins', result);
                     const rivalSocket = GetSocketById(rivalSocketId);
                     rivalSocket.emit('moveCoins', result);
-                    result = result as MovementResults;
+                    
                     if(result.isWon){
                         socket.emit('winner', (result.isWon as Player).coinColor);
                         rivalSocket.emit('winner', (result.isWon as Player).coinColor);

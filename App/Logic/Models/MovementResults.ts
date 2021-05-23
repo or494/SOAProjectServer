@@ -4,6 +4,7 @@ import Player from './Player'
 class MovementResults {
   src: number = 0
   dst: number = 0
+  diceStepPlayed: number=0
   isWon: boolean | Player = false
   isEatenOnDst: undefined | Coin // if the movement caused an eating, undefined for prefference use by developers
   isTookOut: undefined | Coin // if movement caused taking out a coin, undefined for prefferenced use by developers
