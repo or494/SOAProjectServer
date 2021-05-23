@@ -1,5 +1,5 @@
 import io from './webSocket';
-import { AddMessageToChat, GetUserById } from '../Repositories/UserRepository';
+import { AddMessageToChat, GetUserById, AddAsFriends } from '../Repositories/UserRepository';
 import SocketUserMapperService from '../Services/SocketUserMapper';
 import GameMapperService from '../Services/GameMapper';
 import GameInvitationMapper from '../Services/GameInvitationMapper';
@@ -19,6 +19,7 @@ const OnSocketConnection = (socket: any) => {
     Move(socket);
     OnMessageSend(socket);
     OnInvokeLeaveGame(socket);
+    AddUserToFriends(socket);
 }
 
 const RequestRandomGame = (socket: any) => {
@@ -182,7 +183,7 @@ const OnMessageSend = (socket: any) => {
             const recieverSocketId = SocketUserMapperService.GetSocketIdByUserId(message.target);
             console.log(SocketUserMapperService);
             if(recieverSocketId){
-                GetSocketById(recieverSocketId).emit("messageRecieved", {sender: socket.request.user._id, content: message.content, chatId: chat._id});
+                GetSocketById(recieverSocketId).emit("messageRecieved", {sender: socket.request.user._id, reciever: message.target, content: message.content, sendTime: new Date()});
             }
         }
     })
@@ -201,6 +202,17 @@ const OnInvokeLeaveGame = (socket: any) => {
     socket.on('leaveGame', () => {
         LeaveGame(socket);
     });
+}
+
+const AddUserToFriends = (socket: any) => {
+    socket.on('AddToFriends', async(userId: string) => {
+        const users = await AddAsFriends(socket.request.user._id, userId);
+        socket.emit('friendAdded', users[1]);
+        const secondUserSocketId = SocketUserMapperService.GetSocketIdByUserId(userId);
+        if(secondUserSocketId){
+            GetSocketById(secondUserSocketId).emit('friendAdded', users[0]);
+        }
+    })
 }
 
 const LeaveGame = (socket: any) => {

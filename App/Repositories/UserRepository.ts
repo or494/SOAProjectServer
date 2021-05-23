@@ -127,4 +127,30 @@ const GetAllChatMessages = async(chat: Chat) => {
     })
 }
 
-export {CreateUser, LoginValidation, GetUserById, GetUserByName, GetFriendsById, AddMessageToChat, GetAllUserChats};
+const SearchUserByName = (searchQuery: string) => {
+    return new Promise(async(resolve) => {
+        const regex = new RegExp(searchQuery, 'i')
+        const users = await UserModel.find({username:{$regex: regex}});
+        if(users.length == 0) resolve([]);
+        let cnt = 0;
+        const ret: any[] = [];
+        users.forEach(user => {
+            ret.push({id: user.id, username: user.username});
+            cnt++;
+            if(cnt == users.length)resolve(ret); 
+        })
+    })
+}
+
+const AddAsFriends = async(user1Id: string, user2Id: string) => {
+    const user1 = await UserModel.findById(user1Id);
+    const user2 = await UserModel.findById(user2Id);
+    user1?.friends.push(user2Id);
+    await user1?.save();
+    user2?.friends.push(user1Id);
+    await user2?.save();
+    return [{id: user1?.id, username: user1?.username}, {id: user2?.id, username: user2?.username}];
+}
+
+export {CreateUser, LoginValidation, GetUserById, GetUserByName, GetFriendsById, AddMessageToChat,
+     GetAllUserChats, SearchUserByName, AddAsFriends};
