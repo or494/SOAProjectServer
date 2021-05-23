@@ -1,5 +1,4 @@
 import express, { Router } from 'express';
-import User from '../Models/User';
 import {GetFriendsById, GetAllUserChats, SearchUserByName} from '../Repositories/UserRepository';
 const router: Router = express.Router();
 

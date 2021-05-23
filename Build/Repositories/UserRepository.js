@@ -48,6 +48,7 @@ var Result_1 = __importDefault(require("../Models/Result"));
 var User_1 = require("../Models/User");
 var Message_1 = require("../Models/Message");
 var Chat_1 = require("../Models/Chat");
+var SocketUserMapper_1 = __importDefault(require("../Services/SocketUserMapper"));
 var CreateUser = function (username, email, password) { return __awaiter(void 0, void 0, void 0, function () {
     var result, err_1;
     return __generator(this, function (_a) {
@@ -153,13 +154,14 @@ var GetAllFriendsData = function (friends) {
     return new Promise(function (resolve) {
         var friendsData = [];
         friends.forEach(function (friendId) { return __awaiter(void 0, void 0, void 0, function () {
-            var friend, friendData;
+            var friend, isConnected, friendData;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, GetUserById(friendId)];
                     case 1:
                         friend = _a.sent();
-                        friendData = { id: friend === null || friend === void 0 ? void 0 : friend.id, username: friend === null || friend === void 0 ? void 0 : friend.username };
+                        isConnected = SocketUserMapper_1.default.GetSocketIdByUserId(friend === null || friend === void 0 ? void 0 : friend.id);
+                        friendData = { id: friend === null || friend === void 0 ? void 0 : friend.id, username: friend === null || friend === void 0 ? void 0 : friend.username, isConnected: isConnected ? true : false };
                         friendsData.push(friendData);
                         if (friendsData.length == friends.length)
                             resolve(friendsData);

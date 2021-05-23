@@ -4,8 +4,10 @@ import MessageModel from '../DB/Schema/MessageSchema';
 import ErrorResult from '../Models/ErrorResult';
 import Result from '../Models/Result';
 import User, { CreateUserInstance } from '../Models/User';
-import Message, { CreateMessageInstance } from '../Models/Message';
+import { CreateMessageInstance } from '../Models/Message';
 import Chat, { CreateChatInstance } from '../Models/Chat';
+import SocketUserMapperService from '../Services/SocketUserMapper';
+
 
 const CreateUser = async(username: string, email: string , password: string) => {
     let result = ValidateUserDetailes(username, email, password);
@@ -69,7 +71,8 @@ const GetAllFriendsData = (friends: any[]) => {
         const friendsData: any[] = [];
         friends.forEach(async friendId => {
             const friend = await GetUserById(friendId);
-            const friendData = {id: friend?.id, username: friend?.username};
+            const isConnected = SocketUserMapperService.GetSocketIdByUserId(friend?.id);
+            const friendData = {id: friend?.id, username: friend?.username, isConnected: isConnected ? true : false};
             friendsData.push(friendData);
             if(friendsData.length == friends.length) resolve(friendsData);
         })

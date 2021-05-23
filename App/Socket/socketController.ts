@@ -45,7 +45,7 @@ const InformFriendsOnConnection = async(socket: any) => {
     const user = await GetUserById(socket.request.user._id);
     if(user === null) throw new Error("user doesn't exist");
     user.friends.forEach(friendId => {
-        const socketId = SocketUserMapperService.GetSocketIdByUserId(friendId);
+        const socketId = SocketUserMapperService.GetSocketIdByUserId(friendId.toString());
         if(socketId !== undefined){
             GetSocketById(socketId).emit('friendConnected', user._id);
         }
@@ -248,7 +248,7 @@ const InformFriendsOnDisconnection = async(socket: any) => {
     const user = await GetUserById(socket.request.user._id);
     if(user === null) throw new Error("user doesn't exist");
     user.friends.forEach(friendId => {
-        const socketId = SocketUserMapperService.GetSocketIdByUserId(friendId);
+        const socketId = SocketUserMapperService.GetSocketIdByUserId(friendId.toString());
         if(socketId !== undefined){
             GetSocketById(socketId).emit('friendDisconnected', user._id);
         }

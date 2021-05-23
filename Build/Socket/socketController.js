@@ -88,7 +88,7 @@ var InformFriendsOnConnection = function (socket) { return __awaiter(void 0, voi
                 if (user === null)
                     throw new Error("user doesn't exist");
                 user.friends.forEach(function (friendId) {
-                    var socketId = SocketUserMapper_1.default.GetSocketIdByUserId(friendId);
+                    var socketId = SocketUserMapper_1.default.GetSocketIdByUserId(friendId.toString());
                     if (socketId !== undefined) {
                         GetSocketById(socketId).emit('friendConnected', user._id);
                     }
@@ -333,7 +333,7 @@ var InformFriendsOnDisconnection = function (socket) { return __awaiter(void 0, 
                 if (user === null)
                     throw new Error("user doesn't exist");
                 user.friends.forEach(function (friendId) {
-                    var socketId = SocketUserMapper_1.default.GetSocketIdByUserId(friendId);
+                    var socketId = SocketUserMapper_1.default.GetSocketIdByUserId(friendId.toString());
                     if (socketId !== undefined) {
                         GetSocketById(socketId).emit('friendDisconnected', user._id);
                     }
