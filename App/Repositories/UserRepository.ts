@@ -4,8 +4,10 @@ import MessageModel from '../DB/Schema/MessageSchema';
 import ErrorResult from '../Models/ErrorResult';
 import Result from '../Models/Result';
 import User, { CreateUserInstance } from '../Models/User';
-import Message, { CreateMessageInstance } from '../Models/Message';
+import { CreateMessageInstance } from '../Models/Message';
 import Chat, { CreateChatInstance } from '../Models/Chat';
+import SocketUserMapperService from '../Services/SocketUserMapper';
+
 
 const CreateUser = async(username: string, email: string , password: string) => {
     let result = ValidateUserDetailes(username, email, password);
@@ -69,7 +71,8 @@ const GetAllFriendsData = (friends: any[]) => {
         const friendsData: any[] = [];
         friends.forEach(async friendId => {
             const friend = await GetUserById(friendId);
-            const friendData = {id: friend?.id, username: friend?.username};
+            const isConnected = SocketUserMapperService.GetSocketIdByUserId(friend?.id);
+            const friendData = {id: friend?.id, username: friend?.username, isConnected: isConnected ? true : false};
             friendsData.push(friendData);
             if(friendsData.length == friends.length) resolve(friendsData);
         })
@@ -127,4 +130,30 @@ const GetAllChatMessages = async(chat: Chat) => {
     })
 }
 
-export {CreateUser, LoginValidation, GetUserById, GetUserByName, GetFriendsById, AddMessageToChat, GetAllUserChats};
+const SearchUserByName = (searchQuery: string) => {
+    return new Promise(async(resolve) => {
+        const regex = new RegExp(searchQuery, 'i')
+        const users = await UserModel.find({username:{$regex: regex}});
+        if(users.length == 0) resolve([]);
+        let cnt = 0;
+        const ret: any[] = [];
+        users.forEach(user => {
+            ret.push({id: user.id, username: user.username});
+            cnt++;
+            if(cnt == users.length)resolve(ret); 
+        })
+    })
+}
+
+const AddAsFriends = async(user1Id: string, user2Id: string) => {
+    const user1 = await UserModel.findById(user1Id);
+    const user2 = await UserModel.findById(user2Id);
+    user1?.friends.push(user2Id);
+    await user1?.save();
+    user2?.friends.push(user1Id);
+    await user2?.save();
+    return [{id: user1?.id, username: user1?.username}, {id: user2?.id, username: user2?.username}];
+}
+
+export {CreateUser, LoginValidation, GetUserById, GetUserByName, GetFriendsById, AddMessageToChat,
+     GetAllUserChats, SearchUserByName, AddAsFriends};

@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GetAllUserChats = exports.AddMessageToChat = exports.GetFriendsById = exports.GetUserByName = exports.GetUserById = exports.LoginValidation = exports.CreateUser = void 0;
+exports.AddAsFriends = exports.SearchUserByName = exports.GetAllUserChats = exports.AddMessageToChat = exports.GetFriendsById = exports.GetUserByName = exports.GetUserById = exports.LoginValidation = exports.CreateUser = void 0;
 var UserSchema_1 = __importDefault(require("../DB/Schema/UserSchema"));
 var ChatSchema_1 = __importDefault(require("../DB/Schema/ChatSchema"));
 var MessageSchema_1 = __importDefault(require("../DB/Schema/MessageSchema"));
@@ -48,6 +48,7 @@ var Result_1 = __importDefault(require("../Models/Result"));
 var User_1 = require("../Models/User");
 var Message_1 = require("../Models/Message");
 var Chat_1 = require("../Models/Chat");
+var SocketUserMapper_1 = __importDefault(require("../Services/SocketUserMapper"));
 var CreateUser = function (username, email, password) { return __awaiter(void 0, void 0, void 0, function () {
     var result, err_1;
     return __generator(this, function (_a) {
@@ -153,13 +154,14 @@ var GetAllFriendsData = function (friends) {
     return new Promise(function (resolve) {
         var friendsData = [];
         friends.forEach(function (friendId) { return __awaiter(void 0, void 0, void 0, function () {
-            var friend, friendData;
+            var friend, isConnected, friendData;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, GetUserById(friendId)];
                     case 1:
                         friend = _a.sent();
-                        friendData = { id: friend === null || friend === void 0 ? void 0 : friend.id, username: friend === null || friend === void 0 ? void 0 : friend.username };
+                        isConnected = SocketUserMapper_1.default.GetSocketIdByUserId(friend === null || friend === void 0 ? void 0 : friend.id);
+                        friendData = { id: friend === null || friend === void 0 ? void 0 : friend.id, username: friend === null || friend === void 0 ? void 0 : friend.username, isConnected: isConnected ? true : false };
                         friendsData.push(friendData);
                         if (friendsData.length == friends.length)
                             resolve(friendsData);
@@ -272,4 +274,53 @@ var GetAllChatMessages = function (chat) { return __awaiter(void 0, void 0, void
             })];
     });
 }); };
+var SearchUserByName = function (searchQuery) {
+    return new Promise(function (resolve) { return __awaiter(void 0, void 0, void 0, function () {
+        var regex, users, cnt, ret;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    regex = new RegExp(searchQuery, 'i');
+                    return [4 /*yield*/, UserSchema_1.default.find({ username: { $regex: regex } })];
+                case 1:
+                    users = _a.sent();
+                    if (users.length == 0)
+                        resolve([]);
+                    cnt = 0;
+                    ret = [];
+                    users.forEach(function (user) {
+                        ret.push({ id: user.id, username: user.username });
+                        cnt++;
+                        if (cnt == users.length)
+                            resolve(ret);
+                    });
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+};
+exports.SearchUserByName = SearchUserByName;
+var AddAsFriends = function (user1Id, user2Id) { return __awaiter(void 0, void 0, void 0, function () {
+    var user1, user2;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, UserSchema_1.default.findById(user1Id)];
+            case 1:
+                user1 = _a.sent();
+                return [4 /*yield*/, UserSchema_1.default.findById(user2Id)];
+            case 2:
+                user2 = _a.sent();
+                user1 === null || user1 === void 0 ? void 0 : user1.friends.push(user2Id);
+                return [4 /*yield*/, (user1 === null || user1 === void 0 ? void 0 : user1.save())];
+            case 3:
+                _a.sent();
+                user2 === null || user2 === void 0 ? void 0 : user2.friends.push(user1Id);
+                return [4 /*yield*/, (user2 === null || user2 === void 0 ? void 0 : user2.save())];
+            case 4:
+                _a.sent();
+                return [2 /*return*/, [{ id: user1 === null || user1 === void 0 ? void 0 : user1.id, username: user1 === null || user1 === void 0 ? void 0 : user1.username }, { id: user2 === null || user2 === void 0 ? void 0 : user2.id, username: user2 === null || user2 === void 0 ? void 0 : user2.username }]];
+        }
+    });
+}); };
+exports.AddAsFriends = AddAsFriends;
 //# sourceMappingURL=UserRepository.js.map

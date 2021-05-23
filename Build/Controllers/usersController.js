@@ -82,5 +82,36 @@ router.get('/getUserChats', function (req, res) { return __awaiter(void 0, void 
         }
     });
 }); });
+router.get('/getUserId', function (req, res) {
+    var _a;
+    var isAuthenticated = !!req.user;
+    if (isAuthenticated) {
+        // @ts-ignore
+        res.send((_a = req.user) === null || _a === void 0 ? void 0 : _a._id);
+    }
+    else {
+        res.status(401).send();
+    }
+});
+router.get('/searchUser/:searchQuery', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var isAuthenticated, result;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                isAuthenticated = !!req.user;
+                if (!isAuthenticated) return [3 /*break*/, 2];
+                return [4 /*yield*/, UserRepository_1.SearchUserByName(req.params.searchQuery)];
+            case 1:
+                result = _a.sent();
+                console.log(result);
+                res.send(result);
+                return [3 /*break*/, 3];
+            case 2:
+                res.status(401).send();
+                _a.label = 3;
+            case 3: return [2 /*return*/];
+        }
+    });
+}); });
 exports.default = router;
 //# sourceMappingURL=usersController.js.map
