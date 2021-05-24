@@ -24,6 +24,7 @@ const OnSocketConnection = (socket: any) => {
 
 const RequestRandomGame = (socket: any) => {
     socket.on('requestRandomGame', () => {
+        GameInvitationMapper.Remove(socket.request.user._id);
         if(RandomGameQueue === undefined){
             RandomGameQueue = socket.request.user._id;
             socket.emit('waitInQueue', true);
@@ -63,6 +64,7 @@ const GameInviteListener = (socket: any) => {
     socket.on('invite', async(id: string) => {
         if(!await CheckIfUserExistAndConnected(id)) socket.emit('invitationResult', false);
         else{
+            if(RandomGameQueue == socket.request.user._id) RandomGameQueue = undefined;
             const previousInvitedUser = GameInvitationMapper.Remove(socket.request.user._id);
             if(previousInvitedUser != undefined) GetSocketById(SocketUserMapperService.GetSocketIdByUserId(id) as string).emit('invitationCancelled', socket.request.user._id);
             GameInvitationMapper.Add(socket.request.user._id, id);
@@ -83,9 +85,9 @@ const AcceptGameInvitationListener = (socket: any) => {
             if(GameInvitationMapper.IsInvitationExist(socket.request.user._id, id)){
                 GameInvitationMapper.Remove(socket.request.user._id);
                 GameMapperService.Add(new Logic(), socket.request.user._id, id);
-                socket.emit('joinGame', {color: false, game: GameMapperService.GetGameByUser(id)}); 
+                socket.emit('joinGame', {color:  true, game: GameMapperService.GetGameByUser(id)}); 
                 GetSocketById(SocketUserMapperService.GetSocketIdByUserId(id) as string)
-                    .emit('joinGame', {color: true, game: GameMapperService.GetGameByUser(id)}); 
+                    .emit('joinGame', {color: false, game: GameMapperService.GetGameByUser(id)}); 
             } else socket.emit('joinGame', false);
         }
     });
@@ -129,7 +131,6 @@ const ThrowDices = (socket: any) => {
         const game = GameMapperService.GetGameByUser(socket.request.user._id);
         if(game){
             const userColor = GameMapperService.GetUserColor(socket.request.user._id) as boolean;
-            console.log(userColor);
             if(game.currentTurn.whosTurn == userColor){
                 const dices = game.HandleThrowTwoDices();
                 const rivalId = GameMapperService.GetRivalByUser(socket.request.user._id);
@@ -180,7 +181,7 @@ const Move = (socket: any) => {
 const OnMessageSend = (socket: any) => {
     socket.on('messageSend', async(message: any) => {
         if(await GetUserById(message.target)) {
-            const chat = await AddMessageToChat(socket.request.user._id, message.target, message.content);
+            await AddMessageToChat(socket.request.user._id, message.target, message.content);
             const recieverSocketId = SocketUserMapperService.GetSocketIdByUserId(message.target);
             console.log(SocketUserMapperService);
             if(recieverSocketId){

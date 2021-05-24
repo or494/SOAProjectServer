@@ -46,4 +46,8 @@ router.get('/searchUser/:searchQuery', async(req, res) => {
     }
 })
 
+router.get('/helloworld', (req, res) => {
+    res.send('hello world');
+})
+
 export default router;

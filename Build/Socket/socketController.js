@@ -61,6 +61,7 @@ var OnSocketConnection = function (socket) {
 };
 var RequestRandomGame = function (socket) {
     socket.on('requestRandomGame', function () {
+        GameInvitationMapper_1.default.Remove(socket.request.user._id);
         if (RandomGameQueue === undefined) {
             RandomGameQueue = socket.request.user._id;
             socket.emit('waitInQueue', true);
@@ -113,6 +114,8 @@ var GameInviteListener = function (socket) {
                     if (!(_a.sent()))
                         socket.emit('invitationResult', false);
                     else {
+                        if (RandomGameQueue == socket.request.user._id)
+                            RandomGameQueue = undefined;
                         previousInvitedUser = GameInvitationMapper_1.default.Remove(socket.request.user._id);
                         if (previousInvitedUser != undefined)
                             GetSocketById(SocketUserMapper_1.default.GetSocketIdByUserId(id)).emit('invitationCancelled', socket.request.user._id);
@@ -141,9 +144,9 @@ var AcceptGameInvitationListener = function (socket) {
                         if (GameInvitationMapper_1.default.IsInvitationExist(socket.request.user._id, id)) {
                             GameInvitationMapper_1.default.Remove(socket.request.user._id);
                             GameMapper_1.default.Add(new logic_1.default(), socket.request.user._id, id);
-                            socket.emit('joinGame', { color: false, game: GameMapper_1.default.GetGameByUser(id) });
+                            socket.emit('joinGame', { color: true, game: GameMapper_1.default.GetGameByUser(id) });
                             GetSocketById(SocketUserMapper_1.default.GetSocketIdByUserId(id))
-                                .emit('joinGame', { color: true, game: GameMapper_1.default.GetGameByUser(id) });
+                                .emit('joinGame', { color: false, game: GameMapper_1.default.GetGameByUser(id) });
                         }
                         else
                             socket.emit('joinGame', false);
@@ -191,7 +194,6 @@ var ThrowDices = function (socket) {
         var game = GameMapper_1.default.GetGameByUser(socket.request.user._id);
         if (game) {
             var userColor = GameMapper_1.default.GetUserColor(socket.request.user._id);
-            console.log(userColor);
             if (game.currentTurn.whosTurn == userColor) {
                 var dices = game.HandleThrowTwoDices();
                 var rivalId = GameMapper_1.default.GetRivalByUser(socket.request.user._id);
@@ -238,7 +240,7 @@ var Move = function (socket) {
 };
 var OnMessageSend = function (socket) {
     socket.on('messageSend', function (message) { return __awaiter(void 0, void 0, void 0, function () {
-        var chat, recieverSocketId;
+        var recieverSocketId;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, UserRepository_1.GetUserById(message.target)];
@@ -246,7 +248,7 @@ var OnMessageSend = function (socket) {
                     if (!_a.sent()) return [3 /*break*/, 3];
                     return [4 /*yield*/, UserRepository_1.AddMessageToChat(socket.request.user._id, message.target, message.content)];
                 case 2:
-                    chat = _a.sent();
+                    _a.sent();
                     recieverSocketId = SocketUserMapper_1.default.GetSocketIdByUserId(message.target);
                     console.log(SocketUserMapper_1.default);
                     if (recieverSocketId) {

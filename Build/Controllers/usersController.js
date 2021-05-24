@@ -113,5 +113,8 @@ router.get('/searchUser/:searchQuery', function (req, res) { return __awaiter(vo
         }
     });
 }); });
+router.get('/helloworld', function (req, res) {
+    res.send('hello world');
+});
 exports.default = router;
 //# sourceMappingURL=usersController.js.map
