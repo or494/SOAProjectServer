@@ -57,7 +57,6 @@ var OnSocketConnection = function (socket) {
     Move(socket);
     OnMessageSend(socket);
     OnInvokeLeaveGame(socket);
-    AddUserToFriends(socket);
 };
 var RequestRandomGame = function (socket) {
     socket.on('requestRandomGame', function () {
@@ -88,7 +87,7 @@ var InformFriendsOnConnection = function (socket) { return __awaiter(void 0, voi
                 if (user === null)
                     throw new Error("user doesn't exist");
                 user.friends.forEach(function (friendId) {
-                    var socketId = SocketUserMapper_1.default.GetSocketIdByUserId(friendId.toString());
+                    var socketId = SocketUserMapper_1.default.GetSocketIdByUserId(friendId);
                     if (socketId !== undefined) {
                         GetSocketById(socketId).emit('friendConnected', user._id);
                     }
@@ -250,7 +249,7 @@ var OnMessageSend = function (socket) {
                     recieverSocketId = SocketUserMapper_1.default.GetSocketIdByUserId(message.target);
                     console.log(SocketUserMapper_1.default);
                     if (recieverSocketId) {
-                        GetSocketById(recieverSocketId).emit("messageRecieved", { sender: socket.request.user._id, reciever: message.target, content: message.content, sendTime: new Date() });
+                        GetSocketById(recieverSocketId).emit("messageRecieved", { sender: socket.request.user._id, content: message.content, chatId: chat._id });
                     }
                     _a.label = 3;
                 case 3: return [2 /*return*/];
@@ -279,24 +278,6 @@ var OnInvokeLeaveGame = function (socket) {
     socket.on('leaveGame', function () {
         LeaveGame(socket);
     });
-};
-var AddUserToFriends = function (socket) {
-    socket.on('AddToFriends', function (userId) { return __awaiter(void 0, void 0, void 0, function () {
-        var users, secondUserSocketId;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, UserRepository_1.AddAsFriends(socket.request.user._id, userId)];
-                case 1:
-                    users = _a.sent();
-                    socket.emit('friendAdded', users[1]);
-                    secondUserSocketId = SocketUserMapper_1.default.GetSocketIdByUserId(userId);
-                    if (secondUserSocketId) {
-                        GetSocketById(secondUserSocketId).emit('friendAdded', users[0]);
-                    }
-                    return [2 /*return*/];
-            }
-        });
-    }); });
 };
 var LeaveGame = function (socket) {
     var game = GameMapper_1.default.GetGameByUser(socket.request.user._id);
@@ -333,7 +314,7 @@ var InformFriendsOnDisconnection = function (socket) { return __awaiter(void 0, 
                 if (user === null)
                     throw new Error("user doesn't exist");
                 user.friends.forEach(function (friendId) {
-                    var socketId = SocketUserMapper_1.default.GetSocketIdByUserId(friendId.toString());
+                    var socketId = SocketUserMapper_1.default.GetSocketIdByUserId(friendId);
                     if (socketId !== undefined) {
                         GetSocketById(socketId).emit('friendDisconnected', user._id);
                     }
