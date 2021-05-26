@@ -138,7 +138,8 @@ const SearchUserByName = (searchQuery: string) => {
         let cnt = 0;
         const ret: any[] = [];
         users.forEach(user => {
-            ret.push({id: user.id, username: user.username});
+            const isConnected = SocketUserMapperService.GetSocketIdByUserId(user.id) ? true : false;
+            ret.push({id: user.id, username: user.username, isConnected: isConnected});
             cnt++;
             if(cnt == users.length)resolve(ret); 
         })

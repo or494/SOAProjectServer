@@ -289,7 +289,8 @@ var SearchUserByName = function (searchQuery) {
                     cnt = 0;
                     ret = [];
                     users.forEach(function (user) {
-                        ret.push({ id: user.id, username: user.username });
+                        var isConnected = SocketUserMapper_1.default.GetSocketIdByUserId(user.id) ? true : false;
+                        ret.push({ id: user.id, username: user.username, isConnected: isConnected });
                         cnt++;
                         if (cnt == users.length)
                             resolve(ret);
