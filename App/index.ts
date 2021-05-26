@@ -9,7 +9,7 @@ import authentication from './Authentication/authentication';
 import usersController from './Controllers/usersController';
 import { ConnectMongoDB } from './DB/DBInstance/MongooseConnection';
 
-app.set("port", configurations.port);
+app.set("port", process.env.PORT || configurations.port);
 
 const corsOptions = {
   origin: configurations.clientUrl,
@@ -36,7 +36,7 @@ app.use(authentication);
 app.use(authController);
 app.use(usersController);
 
-http.listen(configurations.port, function() {
+http.listen(process.env.PORT || configurations.port, function() {
   console.log(">>> listening on port " + configurations.port);
   InitializeWebSocket();
 });

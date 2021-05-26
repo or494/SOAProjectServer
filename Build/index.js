@@ -51,7 +51,7 @@ var authenticationController_1 = __importDefault(require("./Controllers/authenti
 var authentication_1 = __importDefault(require("./Authentication/authentication"));
 var usersController_1 = __importDefault(require("./Controllers/usersController"));
 var MongooseConnection_1 = require("./DB/DBInstance/MongooseConnection");
-app.set("port", server_basic_configurations_1.default.port);
+app.set("port", process.env.PORT || server_basic_configurations_1.default.port);
 var corsOptions = {
     origin: server_basic_configurations_1.default.clientUrl,
     credentials: true
@@ -73,7 +73,7 @@ app.use(function (req, res, next) {
 app.use(authentication_1.default);
 app.use(authenticationController_1.default);
 app.use(usersController_1.default);
-http.listen(server_basic_configurations_1.default.port, function () {
+http.listen(process.env.PORT || server_basic_configurations_1.default.port, function () {
     console.log(">>> listening on port " + server_basic_configurations_1.default.port);
     InitializeWebSocket();
 });

@@ -4,5 +4,5 @@
         ".vscode{,/**}"
     ],
     "appService.deploySubpath": ".",
-    "appService.defaultWebAppToDeploy": "/subscriptions/6e6f0fb7-76a1-4758-8094-7ac9114effe0/resourceGroups/backgammon-soa-project-rg/providers/Microsoft.Web/sites/backgammon-soa-project"
+    "appService.defaultWebAppToDeploy": "/subscriptions/1c4d485c-61fd-4786-9681-08622c1a4b0a/resourceGroups/soa-backgammon-project-rg/providers/Microsoft.Web/sites/soa-backgammon-project"
 }
